@@ -8,18 +8,18 @@ pipeline {
   stages {
     stage('Verify ScanCentral Version') {
       steps {
-        sh '''
+        sh """
           echo "=== Checking version ==="
           ${SCANCENTRAL_PATH} -version
-        '''
+        """
       }
     }
     stage('Run Scan (expected to fail for reproduction)') {
       steps {
-        sh '''
-    echo === Running scan step (will fail intentionally) ===
-    ./bin/scancentral package -bt none -bf Account_SkyPlus.sln -o output.zip
-'''
+        sh """
+          echo "=== Running scan step (will fail intentionally) ==="
+          ${SCANCENTRAL_PATH} package -bt none -bf Account_SkyPlus.sln -o output.zip
+        """
       }
     }
   }
