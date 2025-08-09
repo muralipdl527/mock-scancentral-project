@@ -1,7 +1,96 @@
-#!/usr/bin/env bash
-if [[ "$1" == "-version" ]]; then
-  echo "ScanCentral version: 24.4.1.0002"
-  exit 0
+#!/bin/bash
+
+# *******************************************************************************************************************
+# Copyright 2008 - 2024 Open Text.
+#
+# The only warranties for products and services of Open Text and its affiliates and licensors ("Open Text") are as
+# may be set forth in the express warranty statements accompanying such products and services. Nothing herein should
+# be construed as constituting an additional warranty. Open Text shall not be liable for technical or editorial
+# errors or omissions contained herein. The information contained herein is subject to change without notice.
+#
+# Except as specifically indicated otherwise, this document contains confidential information and a valid license
+# is required for possession, use or copying. If this work is provided to the U.S. Government, consistent with FAR
+# 12.211 and 12.212, Commercial Computer Software, Computer Software Documentation, and Technical Data for
+# Commercial Items are licensed to the U.S. Government under vendor's standard commercial license.
+# *******************************************************************************************************************
+
+#
+#The base directory path
+#
+PRG="$0"
+while [ -h "$PRG" ] ; do
+  ls=`ls -ld "$PRG"`
+  link=`expr "$ls" : '.*-> \(.*\)$'`
+  if expr "$link" : '.*/.*' > /dev/null; then
+    PRG="$link"
+  else
+    PRG=`dirname "$PRG"`/"$link"
+  fi
+done
+BASE_DIR=`dirname "$PRG"`
+FORTIFY_HOME="${BASE_DIR}/.."
+
+showErrorAndExit() {
+  echo "  The Java version required to run ScanCentral could not be found.
+
+  ScanCentral looks for Java in the following order:
+  1. SCANCENTRAL_JAVA_HOME
+  2. JAVA_HOME_17_X64
+  3. JAVA_HOME
+  4. Java executable from PATH
+
+  If your project requires a Java version other than the version used to run ScanCentral:
+    1. Set the JAVA_HOME variable in your environment to match the
+       location of Java required for the project.
+    2. Set the SCANCENTRAL_JAVA_HOME variable in your environment to match the
+       location of Java 17."
+  exit 1
+}
+
+checkJavaAtJavaHome() {
+  if [ -n "$JAVA_HOME" ] ; then
+    JAVA_CMD="${JAVA_HOME}/bin/java"
+    if [ ! -x "$JAVA_CMD" ] ; then
+      showErrorAndExit
+    fi
+  else
+    JAVA_CMD="java"
+  fi
+}
+
+checkJavaHome17_X64() {
+  if [ -n "$JAVA_HOME_17_X64" ] ; then
+    JAVA_CMD="${JAVA_HOME_17_X64}/bin/java"
+    if [ ! -x "$JAVA_CMD" ] ; then
+      showErrorAndExit
+    fi
+  else
+    checkJavaAtJavaHome
+  fi
+}
+
+checkJavaAtScanCentralJavaHome() {
+  if [ -n "$SCANCENTRAL_JAVA_HOME" ] ; then
+    JAVA_CMD="$SCANCENTRAL_JAVA_HOME/bin/java"
+    if [ ! -x "$JAVA_CMD" ] ; then
+      showErrorAndExit
+    fi
+  else
+    checkJavaHome17_X64
+  fi
+}
+
+setUpJava() {
+  JAVA_CMD="${FORTIFY_HOME}/jre/bin/java"
+  if [ ! -x "$JAVA_CMD" ] ; then
+    checkJavaAtScanCentralJavaHome
+  fi
+}
+
+setUpJava
+
+if [ -n "$CLOUDSCAN_LOG" ]; then
+  echo "\$CLOUDSCAN_LOG variable is no longer supported. Use \$SCANCENTRAL_LOG variable instead."
 fi
-echo "Failed executing scan central: ScanCentral not found or invalid version" >&2
-exit 1
+
+$JAVA_CMD $SCANCENTRAL_VM_OPTS -Dscancentral.installRoot="${FORTIFY_HOME}" -Dlog4j.dir="${SCANCENTRAL_LOG}" -jar "${FORTIFY_HOME}/Core/lib/scancentral-launcher-24.4.1.0002.jar" "$@"
