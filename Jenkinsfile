@@ -55,7 +55,7 @@ pipeline {
             mkdir -p fod_package/bin
 
             echo "=== Copying source files ==="
-            find Account_SkyPlus -type f -name "*.cs" -exec cp --parents {} fod_package/ \;
+            find Account_SkyPlus -type f -name "*.cs" -exec cp {} fod_package/ \;
 
             echo "=== Detecting Release build output ==="
             FRAMEWORK_DIR=$(find Account_SkyPlus/bin/Release -maxdepth 1 -type d -name "net*" | head -n 1)
