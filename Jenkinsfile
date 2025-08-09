@@ -9,21 +9,24 @@ pipeline {
   }
 
   stages {
-    stage('Check MSBuild') {
-      steps {
-        sh '''
-          echo "=== Checking MSBuild Installation ==="
-          if command -v msbuild >/dev/null 2>&1; then
-            echo "MSBuild found:"
-            msbuild -version
-          else
-            echo "ERROR: MSBuild is not installed or not in PATH."
-            echo "Please install MSBuild before running this pipeline."
-            exit 1
-          fi
-        '''
-      }
-    }
+ stage('Check MSBuild') {
+  steps {
+    sh '''
+      echo "=== Checking MSBuild Installation ==="
+      if command -v dotnet >/dev/null 2>&1; then
+        echo "dotnet CLI found:"
+        dotnet --version
+        echo "MSBuild version:"
+        dotnet msbuild -version
+      else
+        echo "ERROR: .NET SDK (with MSBuild) is not installed or not in PATH."
+        echo "Please install .NET SDK before running this pipeline."
+        exit 1
+      fi
+    '''
+  }
+}
+
 
     stage('Verify ScanCentral Version') {
       steps {
@@ -42,7 +45,9 @@ pipeline {
             -bt MSBuild \
             -bf Account_SkyPlus.sln \
             -o output.zip
-          ls -lh output.zip
+            --dotnet-cli-path $(which dotnet)
+       ls -lh output.zip
+        
         """
       }
     }
