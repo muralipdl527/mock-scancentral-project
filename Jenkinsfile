@@ -54,7 +54,7 @@ pipeline {
           fodStaticAssessment(
             releaseId: '1562867',         // Your FoD release ID
             releaseName: '1.0',           // Optional but kept
-            scanCentral: 'none',          // We already packaged in previous stage
+            scanCentral: 'msbuild',          // We already packaged in previous stage
             srcLocation: "${WORKSPACE}",
             overrideGlobalConfig: false   // Use FoD global credentials from Jenkins config
           )
