@@ -55,17 +55,17 @@ pipeline {
                 releaseId: '1562867', 
                 releaseName: '1.0', 
                 remediationScanPreferenceType: '', 
-                scanCentral: 'dotnet', 
+                scanCentral: 'none', 
                 scanCentralBuildCommand: '', 
                 scanCentralBuildFile: '', 
                 scanCentralBuildToolVersion: '', 
                 scanCentralExcludeFiles: '', 
                 scanCentralIncludeTests: '', 
                 scanCentralRequirementFile: '', 
-                scanCentralSkipBuild: '', 
+                scanCentralSkipBuild: 'true', 
                 scanCentralVirtualEnv: '', 
                 sdlcStatus: '', 
-                srcLocation: "${WORKSPACE}", 
+                srcLocation: "${WORKSPACE}/output.zip", 
                 technologyStack: '1'
             )
         }
