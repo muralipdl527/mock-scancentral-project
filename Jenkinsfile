@@ -39,16 +39,14 @@ pipeline {
 
     stage('Package with ScanCentral') {
       steps {
-        sh """
-          echo "=== Packaging project with ScanCentral ==="
-          ${SCANCENTRAL_PATH} package \
-            -bt MSBuild \
-            -bf Account_SkyPlus.sln \
-            -o output.zip
-            --dotnet-cli-path $(which dotnet)
-       ls -lh output.zip
-        
-        """
+        sh '''
+  "$SCANCENTRAL_PATH" package \
+    -bt MSBuild \
+    -bf Account_SkyPlus.sln \
+    -o output.zip
+  ls -lh output.zip
+'''
+
       }
     }
 
