@@ -40,9 +40,11 @@ pipeline {
     stage('Build .NET Project') {
       steps {
         sh '''
-          echo "=== Restore & Build (Release) ==="
+          echo "=== Restoring NuGet packages ==="
           dotnet restore Account_SkyPlus.sln
-          dotnet build   Account_SkyPlus.sln -c Release --no-restore
+
+          echo "=== Building solution in Release mode ==="
+          dotnet build Account_SkyPlus.sln -c Release --no-restore
         '''
       }
     }
@@ -50,29 +52,29 @@ pipeline {
     stage('Package for FoD (-bt none)') {
       steps {
         sh '''
-            echo "=== Creating temp package dir ==="
+            echo "=== Creating temporary package directory ==="
             rm -rf fod_package
             mkdir -p fod_package/bin
 
-            echo "=== Copying source files ==="
-            find . -type f -name "*.cs" | grep -v scancentral | xargs -I {} cp {} fod_package/
+            echo "=== Copying all C# source files ==="
+            find . -type f -name "*.cs" | grep -v scancentral | xargs -I {} cp --parents {} fod_package/
 
-            echo "=== Searching for compiled binaries ==="
+            echo "=== Searching and copying compiled binaries (dll/exe/pdb) ==="
             BIN_FILES=$(find . -type f -name "*.dll" -o -name "*.exe" -o -name "*.pdb" | grep -v scancentral || true)
             if [ -n "$BIN_FILES" ]; then
-                echo "$BIN_FILES" | xargs -I {} cp {} fod_package/bin/
+                echo "$BIN_FILES" | xargs -I {} cp --parents {} fod_package/
             else
-                echo "No binaries found. Adding dummy DLL..."
-                echo "This is a dummy binary for FoD testing." > fod_package/bin/Dummy.dll
+                echo "ERROR: No real binaries found! Ensure DummyProject is added to the solution."
+                exit 1
             fi
 
-            echo "=== Packaging with ScanCentral ==="
+            echo "=== Packaging with ScanCentral CLI ==="
             "${SCANCENTRAL_PATH}" package \
               -bt none \
               -bf fod_package/Account_SkyPlus.csproj \
               -o output.zip
 
-            echo "=== Verifying package contents ==="
+            echo "=== Verifying packaged binaries in output.zip ==="
             unzip -l output.zip | grep -E "\\.dll|\\.exe|\\.pdb" || true
         '''
       }
