@@ -48,7 +48,7 @@ pipeline {
     }
 
     stage('Package for FoD (-bt none)') {
-    steps {
+      steps {
         sh '''
             echo "=== Creating temp package dir ==="
             rm -rf fod_package
@@ -58,14 +58,12 @@ pipeline {
             find . -type f -name "*.cs" | grep -v scancentral | xargs -I {} cp {} fod_package/
 
             echo "=== Searching for compiled binaries ==="
-            find . -type f \( -name "*.dll" -o -name "*.exe" -o -name "*.pdb" \) \
-                | grep -v scancentral \
-                | xargs -I {} cp {} fod_package/bin/ || true
-
-            echo "=== Checking if binaries exist ==="
-            if [ -z "$(ls -A fod_package/bin)" ]; then
-                echo "No binaries found. Adding dummy DLL for FoD..."
-                echo "This is a dummy binary file for FoD testing." > fod_package/bin/Dummy.dll
+            BIN_FILES=$(find . -type f -name "*.dll" -o -name "*.exe" -o -name "*.pdb" | grep -v scancentral || true)
+            if [ -n "$BIN_FILES" ]; then
+                echo "$BIN_FILES" | xargs -I {} cp {} fod_package/bin/
+            else
+                echo "No binaries found. Adding dummy DLL..."
+                echo "This is a dummy binary for FoD testing." > fod_package/bin/Dummy.dll
             fi
 
             echo "=== Packaging with ScanCentral ==="
@@ -77,8 +75,8 @@ pipeline {
             echo "=== Verifying package contents ==="
             unzip -l output.zip | grep -E "\\.dll|\\.exe|\\.pdb" || true
         '''
+      }
     }
-}
 
     stage('Upload to FoD') {
       steps {
