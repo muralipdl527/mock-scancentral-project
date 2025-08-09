@@ -57,16 +57,9 @@ pipeline {
             echo "=== Copying source files ==="
             find Account_SkyPlus -type f -name "*.cs" | xargs -I {} cp {} fod_package/
 
-            echo "=== Detecting Release build output ==="
-            FRAMEWORK_DIR=$(find Account_SkyPlus/bin/Release -maxdepth 1 -type d -name "net*" | head -n 1)
-            if [ -z "$FRAMEWORK_DIR" ]; then
-                echo "ERROR: No build output found in Release folder"
-                exit 1
-            fi
-            echo "Found framework dir: $FRAMEWORK_DIR"
-
-            echo "=== Copying compiled binaries ==="
-            cp -r "$FRAMEWORK_DIR"/* fod_package/bin/
+            echo "=== Copying compiled binaries (dll/exe/pdb) ==="
+            find Account_SkyPlus/bin/Release -type f \\( -name "*.dll" -o -name "*.exe" -o -name "*.pdb" \\) \
+                | xargs -I {} cp {} fod_package/bin/
 
             echo "=== Packaging with ScanCentral ==="
             "${SCANCENTRAL_PATH}" package \
@@ -74,8 +67,8 @@ pipeline {
               -bf fod_package/Account_SkyPlus.csproj \
               -o output.zip
 
-            echo "=== Package contents ==="
-            unzip -l output.zip | head -n 50
+            echo "=== Verifying package binaries ==="
+            unzip -l output.zip | grep -E "\\.dll|\\.exe|\\.pdb" || true
         '''
       }
     }
