@@ -17,9 +17,9 @@ pipeline {
     stage('Run Scan (expected to fail for reproduction)') {
       steps {
         sh '''
-          echo "=== Running scan step (will fail intentionally) ==="
-          ${SCANCENTRAL_PATH} package -bt none -b ${WORKSPACE}/Account_SkyPlus.sln -o output.zip
-        '''
+    echo === Running scan step (will fail intentionally) ===
+    ./bin/scancentral package -bt none -bf Account_SkyPlus.sln -o output.zip
+'''
       }
     }
   }
