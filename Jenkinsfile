@@ -41,7 +41,7 @@ pipeline {
       steps {
         sh '''
   "$SCANCENTRAL_PATH" package \
-    -bt MSBuild \
+    -bt none \
     -bf Account_SkyPlus.sln \
     -o output.zip
   ls -lh output.zip
@@ -56,8 +56,8 @@ pipeline {
           fodStaticAssessment(
             releaseId: '1562867',         // Your FoD release ID
             releaseName: '1.0',           // Optional but kept
-            scanCentral: 'MSBuild',       // Matches packaging tool
-            srcLocation: "${WORKSPACE}",
+            scanCentral: 'none',       // Matches packaging tool
+            srcLocation: "${WORKSPACE}/output.zip",
             overrideGlobalConfig: false   // Use FoD global credentials from Jenkins config
           )
         }
