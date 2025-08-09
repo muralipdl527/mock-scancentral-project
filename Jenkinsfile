@@ -1,3 +1,9 @@
+git add Jenkinsfile
+git commit -m "Fix: use -bf instead of deprecated -b for scancentral package"
+git push origin main
+git add Jenkinsfile
+git commit -m "Fix: use -bf instead of deprecated -b for scancentral package"
+git push origin main
 pipeline {
   agent any
   environment {
