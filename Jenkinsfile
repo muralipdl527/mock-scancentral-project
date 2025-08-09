@@ -52,7 +52,7 @@ pipeline {
             microserviceName: '', 
             openSourceScan: '', 
             overrideGlobalConfig: false, 
-            personalAccessToken: '', 
+            personalAccessToken: 'blF6eTBLOWZqZy9CKnFUV2RmRDw2bDNyVVFqRnA30', 
             releaseId: '1562867', 
             releaseName: '1.0', 
             remediationScanPreferenceType: '', 
