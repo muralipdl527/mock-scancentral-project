@@ -53,7 +53,7 @@ pipeline {
           fodStaticAssessment(
             releaseId: '1562867',         // Your FoD release ID
             releaseName: '1.0',           // Optional but kept
-            scanCentral: 'msbuild',       // Matches packaging tool
+            scanCentral: 'MSBuild',       // Matches packaging tool
             srcLocation: "${WORKSPACE}",
             overrideGlobalConfig: false   // Use FoD global credentials from Jenkins config
           )
