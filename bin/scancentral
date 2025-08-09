@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+if [[ "$1" == "-version" ]]; then
+  echo "ScanCentral version: 24.4.1.0002"
+  exit 0
+fi
+echo "Failed executing scan central: ScanCentral not found or invalid version" >&2
+exit 1
