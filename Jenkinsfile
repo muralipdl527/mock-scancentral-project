@@ -23,7 +23,7 @@ pipeline {
         sh """
           echo "=== Packaging project with ScanCentral ==="
           ${SCANCENTRAL_PATH} package \
-            -bt dotnet \
+            -bt MSBuild \
             -bf Account_SkyPlus.sln \
             -o output.zip
           ls -lh output.zip
