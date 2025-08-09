@@ -50,24 +50,32 @@ pipeline {
     stage('Package for FoD (-bt none)') {
       steps {
         sh '''
-          echo "=== Creating temp package dir ==="
-          rm -rf fod_package
-          mkdir -p fod_package/bin
+            echo "=== Creating temp package dir ==="
+            rm -rf fod_package
+            mkdir -p fod_package/bin
 
-          echo "=== Copying source files ==="
-          cp -r Account_SkyPlus/*.cs fod_package/
+            echo "=== Copying source files ==="
+            find Account_SkyPlus -type f -name "*.cs" -exec cp --parents {} fod_package/ \;
 
-          echo "=== Copying compiled binaries ==="
-          cp -r Account_SkyPlus/bin/Release/* fod_package/bin/
+            echo "=== Detecting Release build output ==="
+            FRAMEWORK_DIR=$(find Account_SkyPlus/bin/Release -maxdepth 1 -type d -name "net*" | head -n 1)
+            if [ -z "$FRAMEWORK_DIR" ]; then
+                echo "ERROR: No build output found in Release folder"
+                exit 1
+            fi
+            echo "Found framework dir: $FRAMEWORK_DIR"
 
-          echo "=== Packaging with ScanCentral ==="
-          "${SCANCENTRAL_PATH}" package \
-            -bt none \
-            -bf fod_package/Account_SkyPlus.csproj \
-            -o output.zip
+            echo "=== Copying compiled binaries ==="
+            cp -r "$FRAMEWORK_DIR"/* fod_package/bin/
 
-          echo "=== Package contents ==="
-          unzip -l output.zip | head -n 50
+            echo "=== Packaging with ScanCentral ==="
+            "${SCANCENTRAL_PATH}" package \
+              -bt none \
+              -bf fod_package/Account_SkyPlus.csproj \
+              -o output.zip
+
+            echo "=== Package contents ==="
+            unzip -l output.zip | head -n 50
         '''
       }
     }
