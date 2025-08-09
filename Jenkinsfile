@@ -35,7 +35,6 @@ pipeline {
       steps {
         script {
           fodStaticAssessment(
-            overrideGlobalConfig: true,
             applicationName: 'test_jenkins1', 
             applicationType: '1', 
             assessmentType: '274', 
