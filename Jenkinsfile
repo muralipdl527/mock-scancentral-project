@@ -35,6 +35,7 @@ pipeline {
       steps {
         script {
           fodStaticAssessment(
+            overrideGlobalConfig: true,
             applicationName: '', 
             applicationType: '1', 
             assessmentType: '274', 
@@ -56,7 +57,7 @@ pipeline {
             releaseId: '1562867', 
             releaseName: '1.0', 
             remediationScanPreferenceType: '', 
-            scanCentral: '', 
+            scanCentral: 'dotnet', 
             scanCentralBuildCommand: '', 
             scanCentralBuildFile: '', 
             scanCentralBuildToolVersion: '', 
@@ -66,7 +67,7 @@ pipeline {
             scanCentralSkipBuild: '', 
             scanCentralVirtualEnv: '', 
             sdlcStatus: '', 
-            srcLocation: '', 
+            srcLocation: '"${WORKSPACE}"', 
             technologyStack: '1', 
             tenantId: 'tam_team_test', 
             username: 'muralipdl527'
