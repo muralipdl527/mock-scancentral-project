@@ -34,7 +34,6 @@ pipeline {
         """
       }
     }
-  }
 
     stage('Package with ScanCentral') {
       steps {
