@@ -1,87 +1,94 @@
 pipeline {
-    agent any
-    options { timestamps() }
+  agent any
+  options { timestamps() }
 
-    environment {
+  environment {
     SCANCENTRAL_PATH = "${WORKSPACE}/bin/scancentral"
-        JAVA_HOME        = "/usr/lib/jvm/java-17-openjdk-amd64"
-        PATH             = "${JAVA_HOME}/bin:${env.PATH}"
+    JAVA_HOME        = "/usr/lib/jvm/java-17-openjdk-amd64"
+    PATH             = "${JAVA_HOME}/bin:${env.PATH}"
+  }
+
+  stages {
+    stage('Check .NET SDK') {
+      steps {
+        sh '''
+          echo "=== Checking .NET SDK ==="
+          if command -v dotnet >/dev/null 2>&1; then
+            dotnet --version
+          else
+            echo "ERROR: dotnet SDK not found in PATH"
+            exit 1
+          fi
+        '''
+      }
     }
 
-    stages {
-
-        stage('Check .NET SDK') {
-            steps {
-                sh '''
-                    echo "=== Checking .NET SDK Installation ==="
-                    if command -v dotnet >/dev/null 2>&1; then
-                        dotnet --version
-                    else
-                        echo "ERROR: .NET SDK not found."
-                        exit 1
-                    fi
-                '''
-            }
-        }
-
-        stage('Build .NET Project') {
-            steps {
-                sh '''
-                    echo "=== Restoring NuGet packages ==="
-                    dotnet restore Account_SkyPlus.sln
-
-                    echo "=== Building in Release mode ==="
-                    dotnet build Account_SkyPlus.sln -c Release --no-restore
-                '''
-            }
-        }
-
-        stage('Verify ScanCentral') {
-            steps {
-                sh '''
-                    echo "=== Checking ScanCentral CLI Version ==="
-                    ${SCANCENTRAL_PATH} -version
-                '''
-            }
-        }
-
-        stage('Package with ScanCentral (bt none)') {
-            steps {
-                sh '''
-                    echo "=== Packaging source + binaries for FoD ==="
-                    ${SCANCENTRAL_PATH} package \
-                        -bt none \
-                        -bf Account_SkyPlus.sln \
-                        -o output.zip \
-                        --include "**/*.cs" \
-                        --include "**/*.vb" \
-                        --include "**/bin/Release/**/*.dll" \
-                        --include "**/bin/Release/**/*.exe" \
-                        --include "**/bin/Release/**/*.pdb"
-                    
-                    echo "=== Package contents ==="
-                    unzip -l output.zip | head -n 50
-                '''
-            }
-        }
-
-        stage('Upload to FoD') {
-            steps {
-                script {
-                    fodStaticAssessment(
-                        releaseId: '1562867',
-                        scanCentral: 'none',
-                        srcLocation: "${WORKSPACE}/output.zip",
-                        overrideGlobalConfig: false
-                    )
-                }
-            }
-        }
+    stage('Prep ScanCentral CLI') {
+      steps {
+        sh '''
+          echo "=== Ensuring ScanCentral CLI is executable ==="
+          if [ ! -f "${SCANCENTRAL_PATH}" ]; then
+            echo "ERROR: ${SCANCENTRAL_PATH} not found. Ensure it exists in repo under bin/"
+            exit 1
+          fi
+          chmod +x "${SCANCENTRAL_PATH}"
+          "${SCANCENTRAL_PATH}" -version
+        '''
+      }
     }
 
-    post {
-        always {
-            archiveArtifacts artifacts: 'output.zip', fingerprint: true
-        }
+    stage('Build .NET Project') {
+      steps {
+        sh '''
+          echo "=== Restore & Build (Release) ==="
+          dotnet restore Account_SkyPlus.sln
+          dotnet build   Account_SkyPlus.sln -c Release --no-restore
+        '''
+      }
     }
+
+    stage('Package for FoD (-bt none)') {
+      steps {
+        sh '''
+          echo "=== Creating temp package dir ==="
+          rm -rf fod_package
+          mkdir -p fod_package/bin
+
+          echo "=== Copying source files ==="
+          cp -r Account_SkyPlus/*.cs fod_package/
+
+          echo "=== Copying compiled binaries ==="
+          cp -r Account_SkyPlus/bin/Release/* fod_package/bin/
+
+          echo "=== Packaging with ScanCentral ==="
+          "${SCANCENTRAL_PATH}" package \
+            -bt none \
+            -bf fod_package/Account_SkyPlus.csproj \
+            -o output.zip
+
+          echo "=== Package contents ==="
+          unzip -l output.zip | head -n 50
+        '''
+      }
+    }
+
+    stage('Upload to FoD') {
+      steps {
+        script {
+          fodStaticAssessment(
+            releaseId: '1562867',
+            scanCentral: 'none',
+            srcLocation: "${WORKSPACE}/output.zip",
+            overrideGlobalConfig: false
+          )
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+      archiveArtifacts artifacts: 'output.zip', fingerprint: true
+    }
+  }
 }
