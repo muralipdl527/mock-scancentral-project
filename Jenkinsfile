@@ -9,6 +9,23 @@ pipeline {
   }
 
   stages {
+    stage('Check MSBuild') {
+      steps {
+        sh '''
+          echo "=== Checking MSBuild Installation ==="
+          if command -v msbuild >/dev/null 2>&1; then
+            echo "MSBuild found:"
+            msbuild -version
+          else
+            echo "ERROR: MSBuild is not installed or not in PATH."
+            echo "Please install MSBuild before running this pipeline."
+            exit 1
+          fi
+        '''
+      }
+    }
+
+  stages {
     stage('Verify ScanCentral Version') {
       steps {
         sh """
@@ -38,7 +55,7 @@ pipeline {
             releaseId: '1562867',         // Your FoD release ID
             releaseName: '1.0',           // Optional but kept
             scanCentral: 'none',          // We already packaged in previous stage
-            srcLocation: "${WORKSPACE}/output.zip",
+            srcLocation: "${WORKSPACE}",
             overrideGlobalConfig: false   // Use FoD global credentials from Jenkins config
           )
         }
