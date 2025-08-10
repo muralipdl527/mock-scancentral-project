@@ -2,23 +2,16 @@ pipeline {
   agent any
   options { timestamps() }
 
-  environment {
-    // FoD AMS region URLs
-    FOD_PORTAL_URL = 'https://ams.fortify.com'
-    FOD_API_URL    = 'https://api.ams.fortify.com'
-
-    // Path to FoD uploader JAR
-    FOD_JAR_PATH   = '/app/FodUpload.jar'  // Adjust if jar is elsewhere
-
-    // Path to your prebuilt ZIP on the Jenkins agent
-    LOCAL_PACKAGE  = '/home/murali/Downloads/dotnet_built_local.zip'
-
-    // FoD parameters
-    RELEASE_ID     = '1562867'
-    TENANT_CODE    = 'tam_team_test'
-    USERNAME       = 'muralipdl57'
-    PASSWORD       = 'YOUR_PASSWORD'      // ⚠️ Replace or use Jenkins credentials
-    ENTITLEMENT_ID = '2'
+  parameters {
+    string(name: 'LOCAL_PACKAGE', defaultValue: '/home/murali/Downloads/dotnet_built_local.zip', description: 'Path to the prebuilt ZIP on the Jenkins agent')
+    string(name: 'FOD_JAR_PATH', defaultValue: '/app/FodUpload.jar', description: 'Path to FodUpload.jar on the Jenkins agent')
+    string(name: 'FOD_PORTAL_URL', defaultValue: 'https://ams.fortify.com', description: 'FoD portal URL')
+    string(name: 'FOD_API_URL', defaultValue: 'https://api.ams.fortify.com', description: 'FoD API URL')
+    string(name: 'TENANT_CODE', description: 'FoD tenant code')
+    string(name: 'USERNAME', description: 'FoD username')
+    password(name: 'PASSWORD', description: 'FoD password')
+    string(name: 'RELEASE_ID', description: 'FoD release ID')
+    string(name: 'ENTITLEMENT_ID', defaultValue: '2', description: 'FoD entitlement preference ID')
   }
 
   stages {
