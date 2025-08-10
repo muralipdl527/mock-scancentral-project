@@ -14,9 +14,9 @@ pipeline {
     LOCAL_PACKAGE  = '/home/murali/Downloads/dotnet_built_local.zip'
 
     // FoD parameters
-    RELEASE_ID     = '8422'
-    TENANT_CODE    = 'Goindigo_POV'
-    USERNAME       = 'ankit'
+    RELEASE_ID     = '1562867'
+    TENANT_CODE    = 'tam_team_test'
+    USERNAME       = 'muralipdl57'
     PASSWORD       = 'YOUR_PASSWORD'      // ⚠️ Replace or use Jenkins credentials
     ENTITLEMENT_ID = '2'
   }
