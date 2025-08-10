@@ -2,34 +2,35 @@ pipeline {
   agent any
   options { timestamps() }
 
-  parameters {
-    file(name: 'PACKAGE_ZIP', description: 'Upload prebuilt FoD package (.zip) from your local machine')
-    string(name: 'RELEASE_ID', defaultValue: '8422', description: 'FoD Release ID')
-    string(name: 'TENANT_CODE', defaultValue: 'Goindigo_POV', description: 'FoD Tenant Code')
-    string(name: 'USERNAME', defaultValue: 'ankit', description: 'FoD Username')
-    password(name: 'PASSWORD', defaultValue: '', description: 'FoD Password')
-    string(name: 'ENTITLEMENT_ID', defaultValue: '2', description: 'FoD Entitlement ID')
-  }
-
   environment {
-    // Adjust these to your FoD region (APAC example)
-    FOD_PORTAL_URL = 'https://apac.fortify.com'
-    FOD_API_URL    = 'https://api.apac.fortify.com'
-    FOD_JAR_PATH   = '/app/FodUpload.jar' // Path where FodUpload.jar is stored on the agent
+    // FoD AMS region URLs
+    FOD_PORTAL_URL = 'https://ams.fortify.com'
+    FOD_API_URL    = 'https://api.ams.fortify.com'
+
+    // Path to FoD uploader JAR
+    FOD_JAR_PATH   = '/app/FodUpload.jar'  // Adjust if jar is elsewhere
+
+    // Path to your prebuilt ZIP on the Jenkins agent
+    LOCAL_PACKAGE  = '/home/murali/Downloads/dotnet_built_local.zip'
+
+    // FoD parameters
+    RELEASE_ID     = '8422'
+    TENANT_CODE    = 'Goindigo_POV'
+    USERNAME       = 'ankit'
+    PASSWORD       = 'YOUR_PASSWORD'      // ⚠️ Replace or use Jenkins credentials
+    ENTITLEMENT_ID = '2'
   }
 
   stages {
-    stage('Receive Package') {
+    stage('Copy Package') {
       steps {
-        script {
-          if (!params.PACKAGE_ZIP) {
-            error "No PACKAGE_ZIP uploaded. Please attach your prebuilt package .zip."
-          }
-        }
         sh '''
-          echo "=== Copying uploaded package to package.zip ==="
-          rm -f package.zip
-          cp "${PACKAGE_ZIP}" package.zip
+          echo "=== Copying local ZIP to workspace ==="
+          if [ ! -f "${LOCAL_PACKAGE}" ]; then
+            echo "ERROR: File not found at ${LOCAL_PACKAGE}"
+            exit 1
+          fi
+          cp "${LOCAL_PACKAGE}" package.zip
           ls -lh package.zip
         '''
       }
@@ -40,6 +41,16 @@ pipeline {
         sh '''
           echo "=== Listing contents of package.zip ==="
           unzip -l package.zip | head -n 30
+
+          echo "=== Checking for required binaries and sources ==="
+          if ! unzip -l package.zip | grep -E '\\.(dll|exe|pdb)$' >/dev/null; then
+            echo "ERROR: No dll/exe/pdb found in package.zip"
+            exit 1
+          fi
+          if ! unzip -l package.zip | grep -E '\\.(sln|csproj)$' >/dev/null; then
+            echo "ERROR: No .sln or .csproj found in package.zip"
+            exit 1
+          fi
         '''
       }
     }
