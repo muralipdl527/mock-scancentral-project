@@ -7,8 +7,8 @@ pipeline {
     FOD_PORTAL_URL = 'https://ams.fortify.com'
     FOD_API_URL    = 'https://api.ams.fortify.com'
 
-    // Path to FoDUploader JAR
-    FOD_JAR_PATH   = '/app/FodUpload.jar'
+    // Path to FoDUploader JAR (updated to your location)
+    FOD_JAR_PATH   = '/home/murali/Downloads/FodUpload.jar'
 
     // Path to your already-built ZIP on Jenkins agent
     LOCAL_PACKAGE  = '/home/murali/Downloads/dotnet_built_local.zip'
