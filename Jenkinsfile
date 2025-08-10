@@ -7,7 +7,7 @@ pipeline {
     FOD_PORTAL_URL = 'https://ams.fortify.com'
     FOD_API_URL    = 'https://api.ams.fortify.com'
 
-    // Path to FoDUploader JAR (updated to your location)
+    // Path to FoDUploader JAR
     FOD_JAR_PATH   = '/home/murali/Downloads/FodUpload.jar'
 
     // Path to your already-built ZIP on Jenkins agent
@@ -46,18 +46,19 @@ pipeline {
 
     stage('Upload to FoD (FoDUploader CLI)') {
       steps {
-        sh """
-          echo "=== Uploading to FoD ==="
-          java -jar "${FOD_JAR_PATH}" \
-            -z "${WORKSPACE}/output.zip" \
-            -purl "${FOD_PORTAL_URL}" \
-            -aurl "${FOD_API_URL}" \
-            -tc "tam_team_test" \
-            -uc "muralipdl57" \
-            -up "YOUR_PASSWORD" \
-            -rid "1562867" \
-            -ep "2"
-        """
+        withCredentials([string(credentialsId: 'fod-password', variable: 'FOD_PASSWORD')]) {
+          sh """
+            echo "=== Uploading to FoD ==="
+            java -jar "${FOD_JAR_PATH}" \
+              -z "${WORKSPACE}/output.zip" \
+              -purl "${FOD_PORTAL_URL}" \
+              -aurl "${FOD_API_URL}" \
+              -tc "tam_team_test" \
+              -uc "muralipdl57" "${FOD_PASSWORD}" \
+              -rid "1562867" \
+              -ep "SingleScanOnly"
+          """
+        }
       }
     }
   }
